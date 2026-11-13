@@ -1,0 +1,45 @@
+# Local stand-in for the SPCS deployment: same images, same service DNS names,
+# and the MCP server is reachable only from inside the network (like public: false).
+name: spcs-mcp
+
+services:
+  mcp-server:
+    build: ./mcp-server
+    image: mcp-server:local
+    platform: linux/amd64
+    environment:
+      LOG_LEVEL: INFO
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  mcp-client:
+    build: ./mcp-client
+    image: mcp-client:local
+    platform: linux/amd64
+    environment:
+      MCP_SERVER_URL: http://mcp-server:8000/mcp
+    ports:
+      - "8080:8080"
+    depends_on:
+      mcp-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # One-shot check, mirrors the SPCS probe job: docker compose run --rm probe
+  probe:
+    image: mcp-server:local
+    platform: linux/amd64
+    profiles: ["probe"]
+    command: ["python", "-m", "mcp_server.probe", "--url", "http://mcp-server:8000/mcp"]
+    depends_on:
+      mcp-server:
+        condition: service_healthy

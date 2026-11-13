@@ -1,0 +1,21 @@
+# Dependencies and build output
+node_modules/
+.venv/
+__pycache__/
+*.py[oc]
+.pytest_cache/
+build/
+dist/
+*.egg-info
+
+# Local Cortex Code state; only the build plan is shared
+.snowflake/*
+!.snowflake/cortex/
+.snowflake/cortex/*
+!.snowflake/cortex/plans/
+
+# Secrets and editor noise
+.env
+*.pem
+*.p8
+.DS_Store

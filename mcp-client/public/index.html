@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP Monitor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>MCP Monitor</h1>
+    <div id="status" class="status unknown">
+      <span class="dot"></span>
+      <span id="status-text">Checking MCP server...</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel" id="server-panel">
+      <h2>Server</h2>
+      <dl>
+        <dt>URL</dt><dd id="server-url">-</dd>
+        <dt>Name</dt><dd id="server-name">-</dd>
+        <dt>Protocol</dt><dd id="server-protocol">-</dd>
+        <dt>Last error</dt><dd id="server-error">-</dd>
+      </dl>
+    </section>
+
+    <section class="panel" id="tools-panel">
+      <h2>Tools <button id="refresh-tools" type="button" class="small">Refresh</button></h2>
+      <p class="hint">Discovered with MCP tools/list.</p>
+      <ul id="tools"><li class="muted">Loading...</li></ul>
+    </section>
+
+    <section class="panel" id="call-panel">
+      <h2>Call add</h2>
+      <form id="call-form">
+        <input id="a" type="number" step="any" value="2" required aria-label="a">
+        <span>+</span>
+        <input id="b" type="number" step="any" value="3" required aria-label="b">
+        <button type="submit">Call</button>
+      </form>
+      <p id="call-result" class="result muted">No call yet.</p>
+    </section>
+
+    <section class="panel" id="traffic-panel">
+      <h2>Traffic generator</h2>
+      <p class="hint">Calls add with random numbers on an interval.</p>
+      <div class="row">
+        <label for="interval">Every</label>
+        <select id="interval">
+          <option value="500">0.5 s</option>
+          <option value="1000" selected>1 s</option>
+          <option value="2000">2 s</option>
+          <option value="5000">5 s</option>
+          <option value="10000">10 s</option>
+        </select>
+        <button id="traffic-toggle" type="button">Start</button>
+      </div>
+      <p id="traffic-status" class="muted">Stopped.</p>
+    </section>
+
+    <section class="panel wide" id="log-panel">
+      <h2>Call log</h2>
+      <div class="stats">
+        <div><span class="label">Total</span><span id="stat-total">0</span></div>
+        <div><span class="label">Errors</span><span id="stat-errors">0</span></div>
+        <div><span class="label">Avg ms</span><span id="stat-avg">-</span></div>
+        <div><span class="label">p95 ms</span><span id="stat-p95">-</span></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Time</th><th>Source</th><th>Args</th><th>Result</th><th>Latency ms</th><th>Status</th></tr>
+        </thead>
+        <tbody id="log"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

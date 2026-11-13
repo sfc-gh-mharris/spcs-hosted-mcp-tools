@@ -1,0 +1,23 @@
+# MCP_CLIENT service: Node MCP client plus monitor UI on a public endpoint.
+# The browser talks only to this service; it calls MCP_SERVER over the internal network.
+spec:
+  containers:
+  - name: client
+    image: /mcp_spcs_demo/app/images/mcp-client:v1
+    env:
+      PORT: "8080"
+      MCP_SERVER_URL: http://mcp-server:8000/mcp
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    readinessProbe:
+      port: 8080
+      path: /healthz
+  endpoints:
+  - name: ui
+    port: 8080
+    public: true

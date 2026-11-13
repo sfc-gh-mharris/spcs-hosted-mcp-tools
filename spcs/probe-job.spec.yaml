@@ -1,0 +1,15 @@
+# One-shot probe job: proves service-to-service MCP over the SPCS internal network.
+# Reuses the server image; exits 0 and logs PROBE PASSED when initialize, tools/list,
+# and add(2, 3) all succeed against MCP_SERVER.
+spec:
+  containers:
+  - name: probe
+    image: /mcp_spcs_demo/app/images/mcp-server:v1
+    command: ["python", "-m", "mcp_server.probe", "--url", "http://mcp-server:8000/mcp", "--timeout", "60"]
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 250m
+        memory: 256Mi

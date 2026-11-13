@@ -1,0 +1,23 @@
+# MCP_SERVER service: Python MCP server, reachable only from inside SPCS.
+# Other services in MCP_SPCS_DEMO.APP call it at http://mcp-server:8000/mcp
+spec:
+  containers:
+  - name: server
+    image: /mcp_spcs_demo/app/images/mcp-server:v2
+    env:
+      PORT: "8000"
+      LOG_LEVEL: INFO
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    readinessProbe:
+      port: 8000
+      path: /healthz
+  endpoints:
+  - name: mcp
+    port: 8000
+    public: false
