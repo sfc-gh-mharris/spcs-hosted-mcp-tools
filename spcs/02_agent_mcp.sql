@@ -23,6 +23,8 @@ CREATE CUSTOM MCP SERVER IF NOT EXISTS MCP_SPCS_DEMO.APP.MCP_SERVER_PUBLIC
 -- A least-privilege consumer: can chat with the demo agent and reach the public toolset,
 -- nothing else. Granted to whoever runs this script.
 USE ROLE ACCOUNTADMIN;
+-- agent-deploy creates the agent as the connection's role; the demo role should own it.
+GRANT OWNERSHIP ON AGENT MCP_SPCS_DEMO.APP.MCP_DEMO_AGENT TO ROLE MCP_DEMO_ROLE COPY CURRENT GRANTS;
 CREATE ROLE IF NOT EXISTS MCP_DEMO_CONSUMER_ROLE COMMENT = 'Calls the SPCS MCP demo public toolset';
 SET deploy_user = CURRENT_USER();
 GRANT ROLE MCP_DEMO_CONSUMER_ROLE TO USER IDENTIFIER($deploy_user);
