@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" width="1200" height="920">
+<style>text { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; }</style>
+<defs>
+<marker id="a-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#29b5e8"/></marker>
+<marker id="a-mid" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#11567f"/></marker>
+<marker id="a-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#5b5b5b"/></marker>
+</defs>
+<rect width="1200" height="920" fill="#ffffff"/>
+<rect x="40" y="24" width="4" height="28" rx="2" fill="#29b5e8"/>
+<rect x="40" y="560" width="1120" height="210" rx="8" ry="8" fill="none" stroke="#b6c2cf" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="52" y="578" fill="#5b5b5b" font-size="12" font-weight="700">MCP_SERVER, one process</text>
+<path d="M 620,822 L 652,822" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#a-blue)"/>
+<path d="M 620,844 L 652,844" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 620,866 L 652,866" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 620,888 L 652,888" fill="none" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="2,3" marker-end="url(#a-gray)"/>
+<path d="M 470,184 L 470,250" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 730,184 L 730,250" fill="none" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="2,3" marker-end="url(#a-gray)"/>
+<path d="M 1010,184 L 1010,218 L 790,218 L 790,250" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 820,295 L 880,295" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#a-blue)"/>
+<path d="M 1010,341 L 1010,410" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#a-blue)"/>
+<path d="M 185,184 L 185,410" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#a-blue)"/>
+<path d="M 280,506 L 280,600" fill="none" stroke="#29b5e8" stroke-width="2" marker-end="url(#a-blue)"/>
+<path d="M 310,645 L 360,645" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 610,645 L 660,645" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 890,645 L 940,645" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 1040,674 L 1040,810" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<text x="52" y="44" fill="#000000" font-size="20" font-weight="700">Snowflake calls the MCP server (A1, A2)</text>
+<text x="52" y="66" fill="#5b5b5b" font-size="14">CoCo and Cortex Agents reach the public toolset through SPCS ingress.</text>
+<rect x="60" y="110" width="250" height="74" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="60" y="110" width="4" height="74" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="74" y="132" fill="#000000" font-size="14" font-weight="700">CoCo (A1)</text>
+<text x="74" y="152" fill="#5b5b5b" font-size="12">MCP client over HTTP</text>
+<text x="74" y="169" fill="#5b5b5b" font-size="12">token from a Snowflake connection</text>
+<rect x="360" y="110" width="220" height="74" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="374" y="132" fill="#000000" font-size="14" font-weight="700">SQL user (A2)</text>
+<text x="374" y="152" fill="#5b5b5b" font-size="12">SELECT DATA_AGENT_RUN(...)</text>
+<text x="374" y="169" fill="#5b5b5b" font-size="12">identity: that person</text>
+<rect x="620" y="110" width="220" height="74" rx="8" ry="8" fill="#ffffff" stroke="#5b5b5b" stroke-width="1.5" stroke-dasharray="5,3"/>
+<text x="634" y="132" fill="#000000" font-size="14" font-weight="700">CoWork user (A3)</text>
+<text x="634" y="152" fill="#5b5b5b" font-size="12">same agent</text>
+<text x="634" y="169" fill="#5b5b5b" font-size="12">not tested</text>
+<rect x="880" y="110" width="260" height="74" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="894" y="132" fill="#000000" font-size="14" font-weight="700">ask_agent (B2)</text>
+<text x="894" y="152" fill="#5b5b5b" font-size="12">MCP_SERVER runs the agent</text>
+<text x="894" y="169" fill="#5b5b5b" font-size="12">identity: MCP_SERVER</text>
+<rect x="360" y="250" width="460" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="360" y="250" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="374" y="272" fill="#000000" font-size="14" font-weight="700">Cortex Agent MCP_DEMO_AGENT</text>
+<text x="374" y="292" fill="#5b5b5b" font-size="12">orchestration: auto; told to use the add tool for sums</text>
+<text x="374" y="309" fill="#5b5b5b" font-size="12">sees mcp_server_public_add, adds a description argument</text>
+<text x="374" y="326" fill="#5b5b5b" font-size="12">check warnings[] on every response</text>
+<rect x="880" y="250" width="260" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="894" y="272" fill="#000000" font-size="14" font-weight="700">CUSTOM MCP SERVER</text>
+<text x="894" y="292" fill="#5b5b5b" font-size="12">MCP_SERVER_PUBLIC</text>
+<text x="894" y="309" fill="#5b5b5b" font-size="12">SERVICE MCP_SERVER</text>
+<text x="894" y="326" fill="#5b5b5b" font-size="12">ENDPOINT mcp-public, PATH /mcp</text>
+<rect x="40" y="410" width="1120" height="96" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="54" y="432" fill="#000000" font-size="14" font-weight="700">SPCS ingress for endpoint mcp-public</text>
+<text x="60" y="460" fill="#11567f" font-size="13" font-weight="700">1  Authenticate</text>
+<text x="60" y="478" fill="#5b5b5b" font-size="12">Snowflake auth on every request</text>
+<text x="335" y="460" fill="#11567f" font-size="13" font-weight="700">2  Authorize</text>
+<text x="335" y="478" fill="#5b5b5b" font-size="12">role needs service role mcp_consumer</text>
+<text x="610" y="460" fill="#11567f" font-size="13" font-weight="700">3  Identify</text>
+<text x="610" y="478" fill="#5b5b5b" font-size="12">adds Sf-Context-Current-User</text>
+<text x="885" y="460" fill="#11567f" font-size="13" font-weight="700">4  Forward</text>
+<text x="885" y="478" fill="#5b5b5b" font-size="12">Host is the ingress hostname</text>
+<text x="360" y="534" fill="#5b5b5b" font-size="12">No endpoint grant: the agent still answers, skips the server, and returns warning 399540.</text>
+<rect x="60" y="600" width="250" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="60" y="600" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="74" y="622" fill="#000000" font-size="14" font-weight="700">Host allow-list</text>
+<text x="74" y="642" fill="#5b5b5b" font-size="12">MCP_PUBLIC_ALLOWED_HOSTS</text>
+<text x="74" y="659" fill="#5b5b5b" font-size="12">deploy.sh fills in the ingress host</text>
+<text x="74" y="676" fill="#5b5b5b" font-size="12">unknown Host: 421</text>
+<rect x="360" y="600" width="250" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="360" y="600" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="374" y="622" fill="#000000" font-size="14" font-weight="700">Public app, port 8001</text>
+<text x="374" y="642" fill="#5b5b5b" font-size="12">toolset: add (Factory tools next)</text>
+<text x="374" y="659" fill="#5b5b5b" font-size="12">no ask_agent or coco_task here,</text>
+<text x="374" y="676" fill="#5b5b5b" font-size="12">so an agent cannot recurse</text>
+<rect x="660" y="600" width="230" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="674" y="622" fill="#000000" font-size="14" font-weight="700">CallRecorder</text>
+<text x="674" y="642" fill="#5b5b5b" font-size="12">MCP middleware on both ports</text>
+<text x="674" y="659" fill="#5b5b5b" font-size="12">endpoint, tool, args, caller</text>
+<text x="674" y="676" fill="#5b5b5b" font-size="12">caller from the header</text>
+<rect x="940" y="600" width="200" height="74" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="954" y="622" fill="#000000" font-size="14" font-weight="700">Private, port 8000</text>
+<text x="954" y="642" fill="#5b5b5b" font-size="12">every tool</text>
+<text x="954" y="659" fill="#5b5b5b" font-size="12">GET /calls: the call log</text>
+<rect x="940" y="810" width="200" height="74" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="940" y="810" width="4" height="74" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="954" y="832" fill="#000000" font-size="14" font-weight="700">MCP_CLIENT monitor</text>
+<text x="954" y="852" fill="#5b5b5b" font-size="12">Inbound (Snowflake) tab</text>
+<text x="954" y="869" fill="#5b5b5b" font-size="12">polls every 2 s</text>
+<rect x="60" y="810" width="520" height="74" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="74" y="832" fill="#000000" font-size="14" font-weight="700">Who the tool sees as the caller</text>
+<text x="74" y="852" fill="#5b5b5b" font-size="12">CoCo or a worksheet: the person signed in</text>
+<text x="74" y="869" fill="#5b5b5b" font-size="12">ask_agent (B2): MCP_SERVER, the service user</text>
+<text x="662" y="826" fill="#5b5b5b" font-size="12">MCP over ingress</text>
+<text x="662" y="848" fill="#5b5b5b" font-size="12">Starts an agent run</text>
+<text x="662" y="870" fill="#5b5b5b" font-size="12">Inside our services</text>
+<text x="662" y="892" fill="#5b5b5b" font-size="12">Not tested</text>
+<rect x="989.1" y="366.5" width="41.8" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="1010" y="379.5" fill="#5b5b5b" font-size="12" text-anchor="middle">HTTPS</text>
+<rect x="100.04" y="287" width="149.92" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="175" y="300" fill="#5b5b5b" font-size="12" text-anchor="middle">HTTPS, Snowflake token</text>
+<rect x="246.38" y="529" width="67.24" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="280" y="542" fill="#5b5b5b" font-size="12" text-anchor="middle">port 8001</text>
+<rect x="1009.56" y="781" width="60.88" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="1040" y="794" fill="#5b5b5b" font-size="12" text-anchor="middle">call log</text>
+</svg>

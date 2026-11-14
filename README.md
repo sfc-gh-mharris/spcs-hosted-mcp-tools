@@ -5,17 +5,9 @@ An MCP server and an MCP client running as Snowpark Container Services (SPCS), w
 - **Snowflake calls our MCP server.** CoCo (Cortex Code) and Cortex Agents call the server's public toolset through SPCS ingress. This is the shape of a customer demo where an agent calls a customer-run MCP server.
 - **Our MCP server calls Cortex.** Tools on the private toolset call AI SQL functions, a Cortex Agent, a managed coding agent, and a self-hosted Cortex Code CLI, all through SQL with the container's session token. Nothing leaves Snowflake.
 
-**[PATTERNS.md](PATTERNS.md)** is the reusable part: each pattern with exact DDL, grants, auth, limits, cost, and what was proven.
+**[PATTERNS.md](PATTERNS.md)** is the reusable part: each pattern with exact DDL, grants, auth, limits, cost, and what was proven. **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** has diagrams of both directions, the agent round trip, and long calls.
 
-```
-Browser --ingress--> MCP_CLIENT (monitor UI) --private :8000, all tools--> MCP_SERVER
-CoCo ------------ingress, Snowflake token---> public :8001, consumer tools  MCP_SERVER
-Cortex Agent --CUSTOM MCP SERVER, ingress---> public :8001                  MCP_SERVER
-MCP_SERVER --SQL (session token)--> AI_COMPLETE / AI_CLASSIFY / AI_SENTIMENT
-                                    DATA_AGENT_RUN (agent calls back into public add)
-                                    AGENT_RUN with code_toolset_all
-MCP_SERVER --private HTTP--> COCO_WORKER --cortex CLI via Cortex Agent SDK--> Snowflake
-```
+![Architecture overview](docs/diagrams/01-overview.svg)
 
 ## What is here
 
@@ -27,6 +19,7 @@ MCP_SERVER --private HTTP--> COCO_WORKER --cortex CLI via Cortex Agent SDK--> Sn
 | `compose.yaml` | All images on one Docker network with SPCS hostnames (`--profile worker` adds the worker) |
 | `spcs/` | Setup SQL (`00` to `03`), service specs, the agent spec's grants, suspend, resume, teardown, cost |
 | `cortex_project/` | The `MCP_DEMO_AGENT` spec, managed with `cortex agent-studio` |
+| `docs/` | Architecture diagrams (SVG) and the script that generates them |
 | `scripts/` | Build and push, rolling deploy, worker creation, local and SPCS smoke tests, SPCS probe jobs |
 | `.snowflake/cortex/plans/` | The staged, test-gated plans this was built from |
 
@@ -111,7 +104,7 @@ Open the monitor's ingress URL in a browser and sign in with your Snowflake user
 
 ```bash
 bash scripts/deploy.sh <server|client|worker> <tag>                  # rolling update; ingress URLs are kept
-snow sql -c "$SNOW_CONNECTION" -f spcs/suspend.sql                   # stop billing (services, pools, warehouse)
+snow sql -c "$SNOW_CONNECTION" -f spcs/suspend.sql                   # stop billing (services, pools; the warehouse auto-suspends)
 snow sql -c "$SNOW_CONNECTION" -f spcs/resume.sql                    # bring it back
 snow sql -c "$SNOW_CONNECTION" -f spcs/cost.sql                      # spend by pattern
 snow sql -c "$SNOW_CONNECTION" -f spcs/99_teardown.sql               # remove everything

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 880" width="1200" height="880">
+<style>text { font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; }</style>
+<defs>
+<marker id="a-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#29b5e8"/></marker>
+<marker id="a-mid" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#11567f"/></marker>
+<marker id="a-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#5b5b5b"/></marker>
+</defs>
+<rect width="1200" height="880" fill="#ffffff"/>
+<rect x="40" y="24" width="4" height="28" rx="2" fill="#29b5e8"/>
+<rect x="260" y="110" width="350" height="640" rx="8" ry="8" fill="none" stroke="#b6c2cf" stroke-width="1" stroke-dasharray="5,3"/>
+<text x="272" y="128" fill="#5b5b5b" font-size="12" font-weight="700">MCP_SERVER, private port 8000</text>
+<path d="M 760,92 L 792,92" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 1005.72,92 L 1037.72,92" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 200,387 L 260,387" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 590,195.5 L 680,195.5" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 590,335.5 L 680,335.5" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 590,475.5 L 680,475.5" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<path d="M 590,615.5 L 680,615.5" fill="none" stroke="#5b5b5b" stroke-width="1.5" marker-end="url(#a-gray)"/>
+<path d="M 900,615.5 L 960,615.5" fill="none" stroke="#11567f" stroke-width="2" marker-end="url(#a-mid)"/>
+<text x="52" y="44" fill="#000000" font-size="20" font-weight="700">MCP_SERVER calls Cortex (B1 to B4)</text>
+<text x="52" y="66" fill="#5b5b5b" font-size="14">Private tools reach Cortex with the container's session token. Nothing leaves Snowflake.</text>
+<rect x="40" y="350" width="160" height="74" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="54" y="372" fill="#000000" font-size="14" font-weight="700">MCP_CLIENT</text>
+<text x="54" y="392" fill="#5b5b5b" font-size="12">or the probe job</text>
+<text x="54" y="409" fill="#5b5b5b" font-size="12">private network</text>
+<rect x="280" y="150" width="310" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="280" y="150" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="294" y="172" fill="#000000" font-size="14" font-weight="700">B1  AI SQL functions</text>
+<text x="294" y="192" fill="#5b5b5b" font-size="12">cortex_complete, cortex_classify,</text>
+<text x="294" y="209" fill="#5b5b5b" font-size="12">cortex_sentiment</text>
+<text x="294" y="226" fill="#5b5b5b" font-size="12">model allow-list in the input schema</text>
+<rect x="280" y="290" width="310" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="280" y="290" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="294" y="312" fill="#000000" font-size="14" font-weight="700">B2  ask_agent</text>
+<text x="294" y="332" fill="#5b5b5b" font-size="12">agent allow-list: MCP_DEMO_AGENT</text>
+<text x="294" y="349" fill="#5b5b5b" font-size="12">reads content[], warnings[], usage</text>
+<text x="294" y="366" fill="#5b5b5b" font-size="12">synchronous, up to 15 min</text>
+<rect x="280" y="430" width="310" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="280" y="430" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="294" y="452" fill="#000000" font-size="14" font-weight="700">B3  ask_coding_agent</text>
+<text x="294" y="472" fill="#5b5b5b" font-size="12">inline spec, claude-sonnet-5</text>
+<text x="294" y="489" fill="#5b5b5b" font-size="12">permission_policy: always_allow</text>
+<text x="294" y="506" fill="#5b5b5b" font-size="12">read-only by instruction and grants</text>
+<rect x="280" y="570" width="310" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="280" y="570" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="294" y="592" fill="#000000" font-size="14" font-weight="700">B4  coco_task</text>
+<text x="294" y="612" fill="#5b5b5b" font-size="12">httpx POST to coco-worker:8000/run</text>
+<text x="294" y="629" fill="#5b5b5b" font-size="12">worker runs one task at a time</text>
+<text x="294" y="646" fill="#5b5b5b" font-size="12">429 when it is busy</text>
+<text x="280" y="692" fill="#5b5b5b" font-size="12">snowflake.py: token re-read on every connect,</text>
+<text x="280" y="709" fill="#5b5b5b" font-size="12">qmark binds, QUERY_TAG spcs-mcp-demo,</text>
+<text x="280" y="726" fill="#5b5b5b" font-size="12">warehouse from QUERY_WAREHOUSE</text>
+<rect x="680" y="150" width="480" height="91" rx="8" ry="8" fill="#11567f" stroke="none"/>
+<text x="694" y="172" fill="#ffffff" font-size="14" font-weight="700">AI_COMPLETE, AI_CLASSIFY, AI_SENTIMENT</text>
+<text x="694" y="192" fill="#dbeaf3" font-size="12">SELECT AI_COMPLETE(model =&gt; ?, prompt =&gt; ?, ...)</text>
+<text x="694" y="209" fill="#dbeaf3" font-size="12">about 0.0002 credits per call</text>
+<text x="694" y="226" fill="#dbeaf3" font-size="12">warehouse bills at least 60 s per resume</text>
+<rect x="680" y="290" width="480" height="91" rx="8" ry="8" fill="#11567f" stroke="none"/>
+<text x="694" y="312" fill="#ffffff" font-size="14" font-weight="700">DATA_AGENT_RUN(agent, body)</text>
+<text x="694" y="332" fill="#dbeaf3" font-size="12">runs MCP_DEMO_AGENT, which calls the public add (A2)</text>
+<text x="694" y="349" fill="#dbeaf3" font-size="12">one JSON value back, 15-minute limit</text>
+<text x="694" y="366" fill="#dbeaf3" font-size="12">about 37k tokens per run (Opus picked by auto)</text>
+<rect x="680" y="430" width="480" height="91" rx="8" ry="8" fill="#11567f" stroke="none"/>
+<text x="694" y="452" fill="#ffffff" font-size="14" font-weight="700">AGENT_RUN(spec)</text>
+<text x="694" y="472" fill="#dbeaf3" font-size="12">code_toolset_all sandbox: bash, files, read-only SQL, skills</text>
+<text x="694" y="489" fill="#dbeaf3" font-size="12">no agent object, nothing to host</text>
+<text x="694" y="506" fill="#dbeaf3" font-size="12">about 165k tokens per run</text>
+<rect x="680" y="570" width="220" height="91" rx="8" ry="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+<rect x="680" y="570" width="4" height="91" rx="2" ry="2" fill="#29b5e8" stroke="none"/>
+<text x="694" y="592" fill="#000000" font-size="14" font-weight="700">COCO_WORKER</text>
+<text x="694" y="612" fill="#5b5b5b" font-size="12">pool MCP_COCO_POOL</text>
+<text x="694" y="629" fill="#5b5b5b" font-size="12">Agent SDK runs the CLI</text>
+<text x="694" y="646" fill="#5b5b5b" font-size="12">read-only SQL callback</text>
+<rect x="960" y="570" width="200" height="91" rx="8" ry="8" fill="#11567f" stroke="none"/>
+<text x="974" y="592" fill="#ffffff" font-size="14" font-weight="700">Cortex Code</text>
+<text x="974" y="612" fill="#dbeaf3" font-size="12">claude-sonnet-5, low effort</text>
+<text x="974" y="629" fill="#dbeaf3" font-size="12">80k to 135k tokens</text>
+<text x="974" y="646" fill="#dbeaf3" font-size="12">about 0.03 credits per run</text>
+<rect x="40" y="780" width="1120" height="74" rx="8" ry="8" fill="#f0f9ff" stroke="#e2e8f0" stroke-width="1.5"/>
+<text x="54" y="802" fill="#000000" font-size="14" font-weight="700">Identity and usage</text>
+<text x="54" y="822" fill="#5b5b5b" font-size="12">Every call runs as a service user (MCP_SERVER or COCO_WORKER) under MCP_DEMO_ROLE. Caller's rights is not done.</text>
+<text x="54" y="839" fill="#5b5b5b" font-size="12">Usage: CORTEX_AI_FUNCTIONS_USAGE_HISTORY (by query tag), CORTEX_AGENT_USAGE_HISTORY, CORTEX_CODE_CLI_USAGE_HISTORY. See spcs/cost.sql.</text>
+<text x="802" y="96" fill="#5b5b5b" font-size="12">To Snowflake, session token</text>
+<text x="1047.72" y="96" fill="#5b5b5b" font-size="12">Private HTTP</text>
+<rect x="620.46" y="186.5" width="29.08" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="635" y="199.5" fill="#5b5b5b" font-size="12" text-anchor="middle">SQL</text>
+<rect x="620.46" y="326.5" width="29.08" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="635" y="339.5" fill="#5b5b5b" font-size="12" text-anchor="middle">SQL</text>
+<rect x="620.46" y="466.5" width="29.08" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="635" y="479.5" fill="#5b5b5b" font-size="12" text-anchor="middle">SQL</text>
+<rect x="601.38" y="606.5" width="67.24" height="18" rx="3" ry="3" fill="#ffffff" stroke="none"/>
+<text x="635" y="619.5" fill="#5b5b5b" font-size="12" text-anchor="middle">POST /run</text>
+</svg>

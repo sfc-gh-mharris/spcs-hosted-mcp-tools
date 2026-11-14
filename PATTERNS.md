@@ -271,7 +271,8 @@ A separate service on its own pool runs the `cortex` CLI through `snowflake-cort
 
 ## Operations
 
-- `spcs/suspend.sql` and `spcs/resume.sql` cover all three services, both pools, and the warehouse.
+- `spcs/suspend.sql` and `spcs/resume.sql` cover all three services and both pools; the warehouse
+  auto-suspends after 60 s, and an explicit `SUSPEND` would fail (090064) once it has.
   Auto-resume is turned off first, because a monitor tab or a Snowflake call through ingress would
   wake a service within seconds. Service-to-service calls never auto-resume anything.
 - `spcs/cost.sql` breaks spend down by pattern: AI functions by query tag, agents by name and user,
