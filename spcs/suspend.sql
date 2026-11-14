@@ -12,8 +12,8 @@ ALTER SERVICE IF EXISTS MCP_SPCS_DEMO.APP.COCO_WORKER SET AUTO_RESUME = FALSE;
 ALTER SERVICE IF EXISTS MCP_SPCS_DEMO.APP.MCP_CLIENT SUSPEND;
 ALTER SERVICE IF EXISTS MCP_SPCS_DEMO.APP.MCP_SERVER SUSPEND;
 ALTER SERVICE IF EXISTS MCP_SPCS_DEMO.APP.COCO_WORKER SUSPEND;
--- The warehouse auto-suspends after 60 s idle; suspend now so nothing waits on that.
-ALTER WAREHOUSE IF EXISTS MCP_DEMO_WH SUSPEND;
+-- No ALTER WAREHOUSE ... SUSPEND: it fails with 090064 when the warehouse is already
+-- suspended, which stops the script before the pools. AUTO_SUSPEND = 60 covers it.
 
 -- MCP_DEMO_ROLE has USAGE and MONITOR only; the pool owner suspends the pools.
 USE ROLE ACCOUNTADMIN;
