@@ -20,6 +20,7 @@ from starlette.responses import JSONResponse
 
 from mcp_server import tools
 from mcp_server.calllog import CallRecorder
+from mcp_server.cortex_tools import register_cortex_tools
 from mcp_server.snowflake import QueryRunner, SnowflakeRunner
 
 SERVER_NAME = "spcs-add-server"
@@ -87,7 +88,9 @@ def build_mcp(runner: QueryRunner | None = None, toolset: str = "private",
     )
     register_consumer_tools(mcp)
     if not public:
-        register_snowflake_tools(mcp, runner or SnowflakeRunner())
+        runner = runner or SnowflakeRunner()
+        register_snowflake_tools(mcp, runner)
+        register_cortex_tools(mcp, runner)
 
     @mcp.custom_route("/healthz", methods=["GET"])
     async def healthz(request: Request) -> JSONResponse:

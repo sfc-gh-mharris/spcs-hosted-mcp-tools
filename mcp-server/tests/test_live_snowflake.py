@@ -26,3 +26,27 @@ async def test_whoami_runs_as_demo_role(mcp_url):
     assert data["role"] == "MCP_DEMO_ROLE"
     assert data["warehouse"] == "MCP_DEMO_WH"
     assert data["query_id"]
+
+
+async def test_cortex_complete_live(mcp_url):
+    async with Client(mcp_url) as client:
+        result = await client.call_tool("cortex_complete", {"prompt": "Reply with exactly: OK", "max_tokens": 8})
+    assert not result.is_error, result.content
+    assert "OK" in result.structured_content["text"]
+    assert result.structured_content["usage"]["total_tokens"] > 0
+
+
+async def test_cortex_classify_live(mcp_url):
+    async with Client(mcp_url) as client:
+        result = await client.call_tool(
+            "cortex_classify", {"text": "My card was charged twice", "categories": ["billing", "shipping"]}
+        )
+    assert not result.is_error, result.content
+    assert result.structured_content["label"] == "billing"
+
+
+async def test_cortex_sentiment_live(mcp_url):
+    async with Client(mcp_url) as client:
+        result = await client.call_tool("cortex_sentiment", {"text": "The demo went great, everyone loved it"})
+    assert not result.is_error, result.content
+    assert result.structured_content["sentiment"] == "positive"

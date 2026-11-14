@@ -26,6 +26,9 @@ USE ROLE ACCOUNTADMIN;
 CREATE ROLE IF NOT EXISTS MCP_DEMO_CONSUMER_ROLE COMMENT = 'Calls the SPCS MCP demo public toolset';
 SET deploy_user = CURRENT_USER();
 GRANT ROLE MCP_DEMO_CONSUMER_ROLE TO USER IDENTIFIER($deploy_user);
+-- Running an agent needs Cortex access. Many accounts grant this to PUBLIC by default;
+-- granting it explicitly keeps the recipe working where an admin has revoked that.
+GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE MCP_DEMO_CONSUMER_ROLE;
 
 USE ROLE MCP_DEMO_ROLE;
 GRANT USAGE ON DATABASE MCP_SPCS_DEMO TO ROLE MCP_DEMO_CONSUMER_ROLE;
