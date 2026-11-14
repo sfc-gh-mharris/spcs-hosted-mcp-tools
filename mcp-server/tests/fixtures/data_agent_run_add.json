@@ -1,0 +1,81 @@
+{
+  "content": [
+    {
+      "tool_use": {
+        "client_side_execute": false,
+        "input": {
+          "a": 19.5,
+          "b": 22.5,
+          "description": "Add 19.5 and 22.5"
+        },
+        "mcp_server_fqn": "MCP_SPCS_DEMO.APP.MCP_SERVER_PUBLIC",
+        "name": "mcp_server_public_add",
+        "tool_use_id": "toolu_bdrk_01Erp5ny8N3e2jzZggstb8Qz",
+        "type": "server_mcp"
+      },
+      "type": "tool_use"
+    },
+    {
+      "tool_result": {
+        "content": [
+          {
+            "json": {
+              "result": "42.0\n{\"result\":42}"
+            },
+            "type": "json"
+          }
+        ],
+        "name": "mcp_server_public_add",
+        "status": "success",
+        "tool_use_id": "toolu_bdrk_01Erp5ny8N3e2jzZggstb8Qz",
+        "type": "server_mcp"
+      },
+      "type": "tool_result"
+    },
+    {
+      "text": "19.5 + 22.5 = **42**. The add tool gave this result.",
+      "type": "text"
+    },
+    {
+      "suggested_queries": [
+        {
+          "query": "What is 42 + 58? Use the add tool."
+        },
+        {
+          "query": "Can you add -15.75 and 30.25 using the add tool?"
+        },
+        {
+          "query": "What is 1234.56 + 7890.44? Use the add tool."
+        }
+      ],
+      "type": "suggested_queries"
+    }
+  ],
+  "metadata": {
+    "created_on": 1794620290804,
+    "orchestration_model": "claude-opus-5-5",
+    "thinking_effort": "low",
+    "usage": {
+      "tokens_consumed": [
+        {
+          "context_window": 1000000,
+          "input_tokens": {
+            "cache_read": 23297,
+            "cache_write": 13923,
+            "total": 37230,
+            "uncached": 10
+          },
+          "model_name": "claude-opus-5-5",
+          "model_role": "orchestration",
+          "output_tokens": {
+            "total": 256
+          }
+        }
+      ]
+    }
+  },
+  "role": "assistant",
+  "schema_version": "v2",
+  "sequence_number": 19,
+  "status": "completed"
+}

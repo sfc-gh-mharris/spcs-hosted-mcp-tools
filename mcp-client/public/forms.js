@@ -3,8 +3,11 @@
 
 const LONG_TEXT = 200;
 
+// An allow-list with one entry is emitted as `const` rather than `enum`.
+const optionsOf = (prop = {}) => (Array.isArray(prop.enum) ? prop.enum : prop.const !== undefined ? [prop.const] : undefined);
+
 function kindOf(prop = {}) {
-  if (Array.isArray(prop.enum)) return 'select';
+  if (optionsOf(prop)) return 'select';
   switch (prop.type) {
     case 'number':
       return 'number';
@@ -28,7 +31,7 @@ export function fieldsFor(schema) {
     kind: kindOf(prop),
     required: required.has(name),
     default: prop.default,
-    options: prop.enum,
+    options: optionsOf(prop),
     label: prop.title ?? name,
     description: prop.description ?? '',
   }));

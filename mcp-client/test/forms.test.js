@@ -39,6 +39,12 @@ test('short strings get a text input, unknown shapes get JSON', () => {
   assert.deepEqual(fields.map((f) => f.kind), ['text', 'json']);
 });
 
+test('a one-value allow-list (JSON Schema const) becomes a select', () => {
+  const [field] = fieldsFor({ properties: { agent: { const: 'DB.S.AGENT', default: 'DB.S.AGENT', type: 'string' } } });
+  assert.equal(field.kind, 'select');
+  assert.deepEqual(field.options, ['DB.S.AGENT']);
+});
+
 test('tools without parameters produce no fields', () => {
   assert.deepEqual(fieldsFor({ type: 'object', properties: {} }), []);
   assert.deepEqual(fieldsFor(undefined), []);

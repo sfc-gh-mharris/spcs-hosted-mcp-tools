@@ -50,3 +50,16 @@ async def test_cortex_sentiment_live(mcp_url):
         result = await client.call_tool("cortex_sentiment", {"text": "The demo went great, everyone loved it"})
     assert not result.is_error, result.content
     assert result.structured_content["sentiment"] == "positive"
+
+
+# Each agent run spends roughly 37k orchestration tokens, so it needs an explicit opt-in.
+# The agent calls the deployed public endpoint in SPCS, not this local server.
+@pytest.mark.skipif(not os.environ.get("LIVE_AGENT"), reason="set LIVE_AGENT=1 to run the Cortex Agent round trip")
+async def test_ask_agent_round_trip_live(mcp_url):
+    async with Client(mcp_url) as client:
+        result = await client.call_tool("ask_agent", {"question": "What is 19.5 + 22.5? Use the add tool."})
+    assert not result.is_error, result.content
+    data = result.structured_content
+    assert "42" in data["answer"]
+    assert [u["name"] for u in data["tool_uses"]] == ["mcp_server_public_add"]
+    assert data["tool_uses"][0]["status"] == "success"
