@@ -103,7 +103,8 @@ test('traffic generator produces traffic entries until disabled', async () => {
 
   const entries = (await json(`/api/calls?since=${start}`)).body.entries;
   assert.ok(entries.length >= 2, `expected >= 2 traffic calls, got ${entries.length}`);
-  assert.ok(entries.every((e) => e.source === 'traffic' && e.ok));
+  // Traffic is hard-wired to add: it must never spend credits on Cortex tools.
+  assert.ok(entries.every((e) => e.source === 'traffic' && e.tool === 'add' && e.ok));
 
   const settled = (await json('/api/calls?since=0')).body.stats.lastId;
   await sleep(800);
@@ -120,4 +121,43 @@ test('serves the monitor UI', async () => {
   const res = await fetch(`${base}/`);
   assert.equal(res.status, 200);
   assert.match(await res.text(), /MCP Monitor/);
+});
+
+test('POST /api/jobs returns 202 before a slow tool finishes, then the entry completes', async () => {
+  const lastRev = (await json('/api/calls?sinceRev=0')).body.stats.lastRev;
+  const started = Date.now();
+  const { status, body } = await post('/api/jobs', { tool: 'slow_echo', args: { text: 'hi', delayMs: 800 } });
+  assert.equal(status, 202);
+  assert.ok(Date.now() - started < 600, 'job endpoint must not wait for the tool');
+  assert.equal(body.entry.status, 'running');
+  assert.equal(body.entry.tool, 'slow_echo');
+
+  let entry;
+  for (let i = 0; i < 40 && entry?.status !== 'done'; i++) {
+    await sleep(100);
+    entry = (await json(`/api/calls?sinceRev=${lastRev}`)).body.entries.find((e) => e.id === body.entry.id);
+  }
+  assert.equal(entry.status, 'done');
+  assert.equal(entry.ok, true);
+  assert.deepEqual(entry.result, { echo: 'hi' });
+  assert.ok(entry.latencyMs >= 700);
+});
+
+test('POST /api/jobs validates the body and the tool name', async () => {
+  const toolCallsBefore = fake.state.toolCalls;
+  for (const bad of [{}, { tool: 5 }, { tool: 'add', args: [1, 2] }, { tool: 'add', args: 'x' }]) {
+    assert.equal((await post('/api/jobs', bad)).status, 400, JSON.stringify(bad));
+  }
+  const unknown = await post('/api/jobs', { tool: 'drop_everything', args: {} });
+  assert.equal(unknown.status, 404);
+  assert.equal(fake.state.toolCalls, toolCallsBefore);
+});
+
+test('GET /api/inbound proxies the server call log', async () => {
+  const { status, body } = await json('/api/inbound?since=0');
+  assert.equal(status, 200);
+  assert.equal(body.entries.length, 1);
+  assert.equal(body.entries[0].endpoint, 'public');
+  assert.equal(body.entries[0].caller, 'TEST_USER');
+  assert.equal(body.last_id, 1);
 });

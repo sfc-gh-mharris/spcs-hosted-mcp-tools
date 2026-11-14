@@ -9,8 +9,8 @@ const log = (msg, extra = {}) => console.log(JSON.stringify({ ts: new Date().toI
 
 const monitor = buildMonitor({
   mcpServerUrl,
-  // One line per call so SPCS service logs can be compared with the server's.
-  onCall: (e) => log('call', { id: e.id, source: e.source, args: e.args, ok: e.ok, result: e.result, error: e.error, ms: e.latencyMs }),
+  // One line per finished call so SPCS service logs can be compared with the server's.
+  onCall: (e) => log('call', { id: e.id, source: e.source, tool: e.tool, args: e.args, ok: e.ok, result: e.result, error: e.error, ms: e.latencyMs }),
 });
 
 const url = await monitor.listen(port, host);
