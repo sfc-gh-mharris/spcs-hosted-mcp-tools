@@ -1,12 +1,19 @@
-# MCP_SERVER service: Python MCP server, reachable only from inside SPCS.
-# Other services in MCP_SPCS_DEMO.APP call it at http://mcp-server:8000/mcp
+# MCP_SERVER service: Python MCP server with two endpoints.
+#   mcp         port 8000, private: full toolset for services in MCP_SPCS_DEMO.APP
+#               (http://mcp-server:8000/mcp), plus GET /calls for the monitor.
+#   mcp-public  port 8001, public: consumer toolset only, for Snowflake callers
+#               (CoCo, Cortex Agents). Ingress requires Snowflake auth and adds
+#               Sf-Context-Current-User. deploy.sh fills in the ingress hostname.
 spec:
   containers:
   - name: server
-    image: /mcp_spcs_demo/app/images/mcp-server:v3
+    image: /mcp_spcs_demo/app/images/mcp-server:v4
     env:
       PORT: "8000"
+      PUBLIC_PORT: "8001"
       LOG_LEVEL: INFO
+      # deploy.sh replaces the placeholder with the mcp-public ingress host from SHOW ENDPOINTS.
+      MCP_PUBLIC_ALLOWED_HOSTS: "localhost:*,127.0.0.1:*,__PUBLIC_INGRESS_HOST__"
     resources:
       requests:
         cpu: 250m
@@ -21,3 +28,12 @@ spec:
   - name: mcp
     port: 8000
     public: false
+  - name: mcp-public
+    port: 8001
+    public: true
+# Grant this to consumer roles instead of ALL_ENDPOINTS_USAGE: it reaches the public
+# toolset only, never the private port or the call log. See 02_agent_mcp.sql.
+serviceRoles:
+- name: mcp_consumer
+  endpoints:
+  - mcp-public

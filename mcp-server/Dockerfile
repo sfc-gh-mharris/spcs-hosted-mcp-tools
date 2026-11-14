@@ -19,6 +19,8 @@ RUN useradd --uid 10001 --no-create-home app
 USER app
 ENV PATH="/app/.venv/bin:$PATH" \
     HOST=0.0.0.0 \
-    PORT=8000
-EXPOSE 8000
+    PORT=8000 \
+    PUBLIC_PORT=8001
+# 8000: private toolset (SPCS internal network). 8001: public toolset (Snowflake callers).
+EXPOSE 8000 8001
 CMD ["python", "-m", "mcp_server"]

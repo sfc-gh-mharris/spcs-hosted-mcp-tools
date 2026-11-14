@@ -1,4 +1,10 @@
-"""MCP wiring: tool registration, a health route for the SPCS readiness probe, and the HTTP app."""
+"""MCP wiring: two toolsets, a health route for the SPCS readiness probe, and the HTTP apps.
+
+- private: everything, for MCP_CLIENT and probe jobs over the SPCS internal network.
+- public: only the tools Snowflake consumers (CoCo, Cortex Agents) should see. Keeping
+  Cortex-calling tools off this endpoint means an agent pointed at us cannot call back
+  into an agent through us.
+"""
 
 import logging
 import os
@@ -13,12 +19,17 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from mcp_server import tools
+from mcp_server.calllog import CallRecorder
 from mcp_server.snowflake import QueryRunner, SnowflakeRunner
 
 SERVER_NAME = "spcs-add-server"
+PUBLIC_SERVER_NAME = "spcs-demo-public"
 # Host headers we accept. "mcp-server" is the short DNS name other services in the
 # same SPCS schema use; override with MCP_ALLOWED_HOSTS to add the full svc.spcs.internal name.
 DEFAULT_ALLOWED_HOSTS = "localhost:*,127.0.0.1:*,[::1]:*,mcp-server:*"
+# The public endpoint is reached through SPCS ingress; add the ingress hostname via
+# MCP_PUBLIC_ALLOWED_HOSTS once SHOW ENDPOINTS reports it.
+DEFAULT_PUBLIC_ALLOWED_HOSTS = "localhost:*,127.0.0.1:*,[::1]:*"
 INSTANCE = socket.gethostname()
 
 logger = logging.getLogger("mcp_server")
@@ -41,6 +52,11 @@ def add(a: float, b: float) -> float:
     return result
 
 
+def register_consumer_tools(mcp: MCPServer) -> None:
+    """Tools safe to expose to Snowflake callers. Step 3 adds the Factory tools here."""
+    mcp.add_tool(add)
+
+
 def register_snowflake_tools(mcp: MCPServer, runner: QueryRunner) -> None:
     async def snowflake_whoami() -> Whoami:
         """Show the Snowflake user, role, and warehouse this server's Cortex calls run as."""
@@ -57,33 +73,60 @@ def register_snowflake_tools(mcp: MCPServer, runner: QueryRunner) -> None:
     mcp.add_tool(snowflake_whoami)
 
 
-def build_mcp(runner: QueryRunner | None = None) -> MCPServer:
-    mcp = MCPServer(name=SERVER_NAME, version="0.2.0", instructions="Adds numbers and calls Snowflake Cortex.")
-    mcp.add_tool(add)
-    register_snowflake_tools(mcp, runner or SnowflakeRunner())
+def build_mcp(runner: QueryRunner | None = None, toolset: str = "private",
+              recorder: CallRecorder | None = None) -> MCPServer:
+    if toolset not in ("private", "public"):
+        raise ValueError(f"unknown toolset {toolset!r}")
+    public = toolset == "public"
+    mcp = MCPServer(
+        name=PUBLIC_SERVER_NAME if public else SERVER_NAME,
+        version="0.3.0",
+        instructions="Demo tools hosted in Snowpark Container Services." if public
+        else "Adds numbers and calls Snowflake Cortex.",
+        middleware=[recorder.middleware(toolset)] if recorder else None,
+    )
+    register_consumer_tools(mcp)
+    if not public:
+        register_snowflake_tools(mcp, runner or SnowflakeRunner())
 
     @mcp.custom_route("/healthz", methods=["GET"])
     async def healthz(request: Request) -> JSONResponse:
-        return JSONResponse({"status": "ok", "server": SERVER_NAME, "instance": INSTANCE})
+        return JSONResponse({"status": "ok", "server": mcp.name, "endpoint": toolset, "instance": INSTANCE})
+
+    if recorder and not public:
+        # Private port only: the monitor reads what Snowflake called without exposing it publicly.
+        @mcp.custom_route("/calls", methods=["GET"])
+        async def calls(request: Request) -> JSONResponse:
+            try:
+                since = int(request.query_params.get("since", "0"))
+            except ValueError:
+                since = 0
+            return JSONResponse({"entries": recorder.since(since), "last_id": recorder.last_id})
 
     return mcp
 
 
-def transport_security_from_env() -> TransportSecuritySettings:
-    raw = os.environ.get("MCP_ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS)
-    hosts = [h.strip() for h in raw.split(",") if h.strip()]
-    return TransportSecuritySettings(
-        enable_dns_rebinding_protection=True,
-        allowed_hosts=hosts,
-        allowed_origins=[f"http://{h}" for h in hosts],
-    )
+def _hosts(var: str, default: str) -> list[str]:
+    return [h.strip() for h in os.environ.get(var, default).split(",") if h.strip()]
 
 
-def create_app() -> Starlette:
+def transport_security_from_env(toolset: str = "private") -> TransportSecuritySettings:
+    if toolset == "public":
+        hosts = _hosts("MCP_PUBLIC_ALLOWED_HOSTS", DEFAULT_PUBLIC_ALLOWED_HOSTS)
+        origins = [f"https://{h}" for h in hosts] + [f"http://{h}" for h in hosts]
+    else:
+        hosts = _hosts("MCP_ALLOWED_HOSTS", DEFAULT_ALLOWED_HOSTS)
+        origins = [f"http://{h}" for h in hosts]
+    return TransportSecuritySettings(enable_dns_rebinding_protection=True, allowed_hosts=hosts,
+                                     allowed_origins=origins)
+
+
+def create_app(toolset: str = "private", recorder: CallRecorder | None = None,
+               runner: QueryRunner | None = None) -> Starlette:
     # Stateless + JSON responses: every request stands alone, so any instance can serve it
     # and no SSE stream has to survive the SPCS network path.
-    return build_mcp().streamable_http_app(
+    return build_mcp(runner, toolset, recorder).streamable_http_app(
         stateless_http=True,
         json_response=True,
-        transport_security=transport_security_from_env(),
+        transport_security=transport_security_from_env(toolset),
     )

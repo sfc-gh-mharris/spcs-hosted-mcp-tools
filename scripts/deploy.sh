@@ -29,8 +29,21 @@ open(path, "w").write(new)
 PY
 
 echo "== ALTER SERVICE $fqn -> $image:$tag"
+rendered="$(cat "$spec")"
+if [[ "$which" == server ]]; then
+  # The public endpoint's Host header is its ingress hostname, which is account-specific and
+  # only known once SPCS provisions it, so it is filled in here rather than kept in the spec.
+  host=$(snow sql -c "$CONNECTION" --role MCP_DEMO_ROLE --format json -q "SHOW ENDPOINTS IN SERVICE $fqn" |
+    python3 -c "import json,sys; print(next((r['ingress_url'] for r in json.load(sys.stdin) if r['name'] == 'mcp-public' and (r['ingress_url'] or '').endswith('.snowflakecomputing.app')), ''))")
+  if [[ -z "$host" ]]; then
+    echo "   note: mcp-public ingress is not provisioned yet; deploy again once SHOW ENDPOINTS lists it"
+  else
+    echo "   public ingress host: $host"
+  fi
+  rendered="${rendered//__PUBLIC_INGRESS_HOST__/$host}"
+fi
 snow sql -c "$CONNECTION" --role MCP_DEMO_ROLE -q "ALTER SERVICE $fqn FROM SPECIFICATION \$\$
-$(cat "$spec")
+$rendered
 \$\$"
 
 echo "== waiting for READY on $image:$tag"

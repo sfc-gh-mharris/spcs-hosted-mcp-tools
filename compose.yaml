@@ -11,6 +11,7 @@ services:
       LOG_LEVEL: INFO
     expose:
       - "8000"
+      - "8001"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
       interval: 5s
