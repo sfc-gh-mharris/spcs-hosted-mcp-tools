@@ -1,4 +1,4 @@
-"""MCP wiring: the add tool, a health route for the SPCS readiness probe, and the HTTP app."""
+"""MCP wiring: tool registration, a health route for the SPCS readiness probe, and the HTTP app."""
 
 import logging
 import os
@@ -7,11 +7,13 @@ import time
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
+from pydantic import BaseModel
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from mcp_server import tools
+from mcp_server.snowflake import QueryRunner, SnowflakeRunner
 
 SERVER_NAME = "spcs-add-server"
 # Host headers we accept. "mcp-server" is the short DNS name other services in the
@@ -21,10 +23,16 @@ INSTANCE = socket.gethostname()
 
 logger = logging.getLogger("mcp_server")
 
-mcp = MCPServer(name=SERVER_NAME, version="0.1.0", instructions="Exposes an add tool that sums two numbers.")
+
+class Whoami(BaseModel):
+    user: str
+    role: str
+    warehouse: str | None
+    account: str
+    region: str
+    query_id: str
 
 
-@mcp.tool()
 def add(a: float, b: float) -> float:
     """Add two numbers and return the sum."""
     start = time.perf_counter()
@@ -33,9 +41,32 @@ def add(a: float, b: float) -> float:
     return result
 
 
-@mcp.custom_route("/healthz", methods=["GET"])
-async def healthz(request: Request) -> JSONResponse:
-    return JSONResponse({"status": "ok", "server": SERVER_NAME, "instance": INSTANCE})
+def register_snowflake_tools(mcp: MCPServer, runner: QueryRunner) -> None:
+    async def snowflake_whoami() -> Whoami:
+        """Show the Snowflake user, role, and warehouse this server's Cortex calls run as."""
+        res = await runner.run(
+            "SELECT CURRENT_USER() AS U, CURRENT_ROLE() AS R, CURRENT_WAREHOUSE() AS W, "
+            "CURRENT_ACCOUNT() AS A, CURRENT_REGION() AS G",
+            timeout_s=30,
+        )
+        row = res.rows[0]
+        logger.info("tool=snowflake_whoami role=%s warehouse=%s query_id=%s", row["R"], row["W"], res.query_id)
+        return Whoami(user=row["U"], role=row["R"], warehouse=row["W"], account=row["A"], region=row["G"],
+                      query_id=res.query_id)
+
+    mcp.add_tool(snowflake_whoami)
+
+
+def build_mcp(runner: QueryRunner | None = None) -> MCPServer:
+    mcp = MCPServer(name=SERVER_NAME, version="0.2.0", instructions="Adds numbers and calls Snowflake Cortex.")
+    mcp.add_tool(add)
+    register_snowflake_tools(mcp, runner or SnowflakeRunner())
+
+    @mcp.custom_route("/healthz", methods=["GET"])
+    async def healthz(request: Request) -> JSONResponse:
+        return JSONResponse({"status": "ok", "server": SERVER_NAME, "instance": INSTANCE})
+
+    return mcp
 
 
 def transport_security_from_env() -> TransportSecuritySettings:
@@ -51,7 +82,7 @@ def transport_security_from_env() -> TransportSecuritySettings:
 def create_app() -> Starlette:
     # Stateless + JSON responses: every request stands alone, so any instance can serve it
     # and no SSE stream has to survive the SPCS network path.
-    return mcp.streamable_http_app(
+    return build_mcp().streamable_http_app(
         stateless_http=True,
         json_response=True,
         transport_security=transport_security_from_env(),
