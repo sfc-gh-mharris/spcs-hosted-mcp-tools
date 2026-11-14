@@ -23,6 +23,7 @@ from mcp_server.agent_tools import register_agent_tools
 from mcp_server.calllog import CallRecorder
 from mcp_server.cortex_tools import register_cortex_tools
 from mcp_server.snowflake import QueryRunner, SnowflakeRunner
+from mcp_server.worker_tools import WorkerClient, register_worker_tools
 
 SERVER_NAME = "spcs-add-server"
 PUBLIC_SERVER_NAME = "spcs-demo-public"
@@ -76,7 +77,7 @@ def register_snowflake_tools(mcp: MCPServer, runner: QueryRunner) -> None:
 
 
 def build_mcp(runner: QueryRunner | None = None, toolset: str = "private",
-              recorder: CallRecorder | None = None) -> MCPServer:
+              recorder: CallRecorder | None = None, worker: WorkerClient | None = None) -> MCPServer:
     if toolset not in ("private", "public"):
         raise ValueError(f"unknown toolset {toolset!r}")
     public = toolset == "public"
@@ -93,6 +94,7 @@ def build_mcp(runner: QueryRunner | None = None, toolset: str = "private",
         register_snowflake_tools(mcp, runner)
         register_cortex_tools(mcp, runner)
         register_agent_tools(mcp, runner)
+        register_worker_tools(mcp, worker or WorkerClient())
 
     @mcp.custom_route("/healthz", methods=["GET"])
     async def healthz(request: Request) -> JSONResponse:

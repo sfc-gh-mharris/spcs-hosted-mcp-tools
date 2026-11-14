@@ -1,0 +1,32 @@
+# COCO_WORKER service: the Cortex Code CLI driven by the Cortex Agent SDK (pattern B4).
+# Private endpoint only. MCP_SERVER's coco_task tool calls http://coco-worker:8000/run.
+#
+# sessionTokenConfig.mountConnectionConfig makes SPCS write a connections.toml with a
+# [default] connection whose token_file_path points at the rotating session token, and set
+# SNOWFLAKE_HOME to its directory. The worker passes connection "default" to the CLI.
+spec:
+  containers:
+  - name: worker
+    image: /mcp_spcs_demo/app/images/coco-worker:w3
+    env:
+      PORT: "8000"
+      LOG_LEVEL: INFO
+      COCO_CONNECTION: default
+      COCO_MODEL: claude-sonnet-5
+      COCO_MAX_SECONDS: "300"
+    sessionTokenConfig:
+      mountConnectionConfig: true
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 3Gi
+    readinessProbe:
+      port: 8000
+      path: /healthz
+  endpoints:
+  - name: run
+    port: 8000
+    public: false

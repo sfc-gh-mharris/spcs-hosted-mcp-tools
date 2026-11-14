@@ -10,9 +10,10 @@ tag="${2:-}"
 case "$which" in
   server) service=MCP_SERVER; image=mcp-server ;;
   client) service=MCP_CLIENT; image=mcp-client ;;
-  *) echo "usage: deploy.sh <server|client> <tag>"; exit 2 ;;
+  worker) service=COCO_WORKER; image=coco-worker ;;
+  *) echo "usage: deploy.sh <server|client|worker> <tag>"; exit 2 ;;
 esac
-[[ -n "$tag" ]] || { echo "usage: deploy.sh <server|client> <tag>"; exit 2; }
+[[ -n "$tag" ]] || { echo "usage: deploy.sh <server|client|worker> <tag>"; exit 2; }
 
 CONNECTION="${SNOW_CONNECTION:?set SNOW_CONNECTION to your snow CLI connection name}"
 spec="spcs/$image.spec.yaml"
