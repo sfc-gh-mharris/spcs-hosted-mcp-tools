@@ -9,8 +9,10 @@ services:
     platform: linux/amd64
     environment:
       LOG_LEVEL: INFO
+      COCO_WORKER_URL: http://coco-worker:8000
     expose:
       - "8000"
+      - "8001"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
       interval: 5s
@@ -43,3 +45,18 @@ services:
     depends_on:
       mcp-server:
         condition: service_healthy
+
+  # Cortex Code worker (pattern B4). Opt in with --profile worker; without Snowflake credentials
+  # it starts and answers /healthz, but runs fail at the CLI's login.
+  coco-worker:
+    build: ./coco-worker
+    image: coco-worker:local
+    platform: linux/amd64
+    profiles: ["worker"]
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 12

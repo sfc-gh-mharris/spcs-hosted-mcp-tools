@@ -3,7 +3,7 @@
 spec:
   containers:
   - name: client
-    image: /mcp_spcs_demo/app/images/mcp-client:v1
+    image: /mcp_spcs_demo/app/images/mcp-client:v9
     env:
       PORT: "8080"
       MCP_SERVER_URL: http://mcp-server:8000/mcp

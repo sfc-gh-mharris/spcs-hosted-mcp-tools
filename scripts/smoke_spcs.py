@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Stage 6 gate: call the MCP_CLIENT public endpoint programmatically with a PAT.
 
-Usage: SNOW_CONNECTION=<conn> python3 scripts/smoke_spcs.py [--url https://<ingress>] [--connection NAME] [--soak SECONDS]
+Usage: SNOW_CONNECTION=<conn> python3 scripts/smoke_spcs.py [--url https://<ingress>] [--connection NAME]
+       [--soak SECONDS] [--cortex] [--agents]
 
 The PAT comes from SNOWFLAKE_PAT if set, otherwise from the `token` field of the named
 connection in ~/.snowflake/connections.toml. It is held in memory only and never printed.
 Without --url, the ingress URL is looked up with `snow sql` as MCP_DEMO_ROLE.
 --soak runs the traffic generator at 1 s and polls like the UI does (every 2 s) for that many
 seconds, to show the call log keeps flowing past the 90 s ingress idle timeout.
+--cortex runs each AI function tool as a background job through the monitor, the way the UI does.
+--agents also runs ask_agent, ask_coding_agent, and coco_task (tens of seconds and real credits each).
 """
 
 import argparse
@@ -70,6 +73,8 @@ def main() -> int:
     parser.add_argument("--connection", default=os.environ.get("SNOW_CONNECTION"),
                         help="snow CLI connection name (default: $SNOW_CONNECTION)")
     parser.add_argument("--soak", type=int, default=0, metavar="SECONDS")
+    parser.add_argument("--cortex", action="store_true", help="run each AI function tool once as a job")
+    parser.add_argument("--agents", action="store_true", help="also run the agent and Cortex Code tools")
     args = parser.parse_args()
     if not args.connection:
         parser.error("set SNOW_CONNECTION or pass --connection")
@@ -105,8 +110,55 @@ def main() -> int:
     if args.soak:
         soak(opener, base, pat, args.soak, check)
 
+    if args.cortex or args.agents:
+        jobs = list(CORTEX_JOBS) + (list(AGENT_JOBS) if args.agents else [])
+        for tool, tool_args, expect in jobs:
+            run_job(opener, base, pat, tool, tool_args, expect, check)
+
     print("SPCS SMOKE PASSED" if failures == 0 else f"SPCS SMOKE FAILED ({failures})")
     return 0 if failures == 0 else 1
+
+
+# (tool, args, check on the result). Each runs as a background job: POST /api/jobs returns 202 and
+# the entry is polled until done, so no single request waits on Cortex.
+CORTEX_JOBS = [
+    ("snowflake_whoami", {}, lambda r: r.get("role") == "MCP_DEMO_ROLE"),
+    ("cortex_complete", {"prompt": "Reply with exactly: OK", "max_tokens": 8}, lambda r: "OK" in r.get("text", "")),
+    ("cortex_classify", {"text": "My card was charged twice", "categories": ["billing", "shipping"]},
+     lambda r: r.get("label") == "billing"),
+    ("cortex_sentiment", {"text": "The demo went great"}, lambda r: r.get("sentiment") == "positive"),
+]
+AGENT_JOBS = [
+    ("ask_agent", {"question": "What is 19.5 + 22.5? Use the add tool."},
+     lambda r: "42" in r.get("answer", "") and any(u["name"].endswith("add") for u in r.get("tool_uses", []))),
+    ("ask_coding_agent", {"task": "How many tables are in MCP_SPCS_DEMO.APP?", "max_seconds": 180},
+     lambda r: bool(r.get("tool_uses"))),
+    ("coco_task", {"prompt": "How many tables are in MCP_SPCS_DEMO.APP?", "max_turns": 4},
+     lambda r: "sql_execute" in r.get("tool_uses", [])),
+]
+
+
+def run_job(opener, base: str, pat: str, tool: str, tool_args: dict, expect, check, wait_s: int = 600) -> None:
+    status, body = request(opener, base, pat, "/api/jobs", {"tool": tool, "args": tool_args})
+    if status != 202:
+        check(f"job {tool}", False, f"status={status} body={body}")
+        return
+    job_id = body["entry"]["id"]
+    deadline = time.monotonic() + wait_s
+    entry = None
+    while time.monotonic() < deadline:
+        time.sleep(2)
+        status, body = request(opener, base, pat, "/api/calls?sinceRev=0")
+        entry = next((e for e in body.get("entries", []) if e["id"] == job_id), None)
+        if entry and entry.get("status") == "done":
+            break
+    if not entry or entry.get("status") != "done":
+        check(f"job {tool}", False, f"not done after {wait_s}s")
+        return
+    result = entry.get("result") if isinstance(entry.get("result"), dict) else {}
+    ok = bool(entry.get("ok")) and expect(result)
+    detail = json.dumps(entry.get("result") if entry.get("ok") else entry.get("error"), default=str)[:240]
+    check(f"job {tool}", ok, f"{entry.get('latencyMs')} ms {detail}")
 
 
 def soak(opener, base: str, pat: str, seconds: int, check) -> None:

@@ -1,0 +1,7 @@
+version: 1
+artifacts:
+  - path: spcs/MCP_DEMO_AGENT.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: MCP_SPCS_DEMO.APP.MCP_DEMO_AGENT

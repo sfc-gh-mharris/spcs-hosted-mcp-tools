@@ -10,9 +10,10 @@ tag="${2:-}"
 case "$which" in
   server) service=MCP_SERVER; image=mcp-server ;;
   client) service=MCP_CLIENT; image=mcp-client ;;
-  *) echo "usage: deploy.sh <server|client> <tag>"; exit 2 ;;
+  worker) service=COCO_WORKER; image=coco-worker ;;
+  *) echo "usage: deploy.sh <server|client|worker> <tag>"; exit 2 ;;
 esac
-[[ -n "$tag" ]] || { echo "usage: deploy.sh <server|client> <tag>"; exit 2; }
+[[ -n "$tag" ]] || { echo "usage: deploy.sh <server|client|worker> <tag>"; exit 2; }
 
 CONNECTION="${SNOW_CONNECTION:?set SNOW_CONNECTION to your snow CLI connection name}"
 spec="spcs/$image.spec.yaml"
@@ -29,8 +30,21 @@ open(path, "w").write(new)
 PY
 
 echo "== ALTER SERVICE $fqn -> $image:$tag"
+rendered="$(cat "$spec")"
+if [[ "$which" == server ]]; then
+  # The public endpoint's Host header is its ingress hostname, which is account-specific and
+  # only known once SPCS provisions it, so it is filled in here rather than kept in the spec.
+  host=$(snow sql -c "$CONNECTION" --role MCP_DEMO_ROLE --format json -q "SHOW ENDPOINTS IN SERVICE $fqn" |
+    python3 -c "import json,sys; print(next((r['ingress_url'] for r in json.load(sys.stdin) if r['name'] == 'mcp-public' and (r['ingress_url'] or '').endswith('.snowflakecomputing.app')), ''))")
+  if [[ -z "$host" ]]; then
+    echo "   note: mcp-public ingress is not provisioned yet; deploy again once SHOW ENDPOINTS lists it"
+  else
+    echo "   public ingress host: $host"
+  fi
+  rendered="${rendered//__PUBLIC_INGRESS_HOST__/$host}"
+fi
 snow sql -c "$CONNECTION" --role MCP_DEMO_ROLE -q "ALTER SERVICE $fqn FROM SPECIFICATION \$\$
-$(cat "$spec")
+$rendered
 \$\$"
 
 echo "== waiting for READY on $image:$tag"

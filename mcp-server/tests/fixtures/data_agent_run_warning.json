@@ -1,0 +1,19 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "I could not use the add tool because it is not available right now."
+    }
+  ],
+  "warnings": [
+    {
+      "code": "399540",
+      "message": "Custom MCP server 'MCP_SPCS_DEMO.APP.MCP_SERVER_PUBLIC' is unavailable and will be skipped: SQL compilation error: SERVICE 'MCP_SPCS_DEMO.APP.MCP_SERVER' does not exist or operation not authorized."
+    }
+  ],
+  "metadata": {
+    "orchestration_model": "claude-opus-5-5"
+  },
+  "role": "assistant",
+  "status": "completed"
+}

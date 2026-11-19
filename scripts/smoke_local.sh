@@ -1,21 +1,24 @@
 #!/usr/bin/env bash
-# Stage 3 gate: build both amd64 images, run them on a compose network named like SPCS,
+# Stage 3 gate: build the amd64 images, run them on a compose network named like SPCS,
 # and check the full browser-facing path plus the in-network probe.
 # KEEP_UP=1 leaves the stack running afterwards for manual UI checks.
+# WITH_WORKER=1 also builds coco-worker and checks mcp-server reaches it by service name.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 CLIENT=http://localhost:8080
+PROFILES=()
+[[ "${WITH_WORKER:-0}" == "1" ]] && PROFILES=(--profile worker)
 fail() { echo "FAIL $*"; exit 1; }
 pass() { echo "PASS $*"; }
 
 cleanup() {
-  if [[ "${KEEP_UP:-0}" != "1" ]]; then docker compose down --remove-orphans >/dev/null 2>&1 || true; fi
+  if [[ "${KEEP_UP:-0}" != "1" ]]; then docker compose "${PROFILES[@]}" down --remove-orphans >/dev/null 2>&1 || true; fi
 }
 trap cleanup EXIT
 
 echo "== build and start (waits for healthchecks)"
-docker compose up --build --detach --wait
+docker compose "${PROFILES[@]}" up --build --detach --wait
 
 echo "== checks"
 curl -fsS "$CLIENT/healthz" >/dev/null && pass "client healthz" || fail "client healthz"
@@ -42,7 +45,16 @@ docker compose run --rm probe && pass "in-network probe" || fail "in-network pro
 
 docker compose logs mcp-server | grep -q "tool=add a=2" && pass "server logged the client's call" || fail "server log missing call"
 
+if [[ "${WITH_WORKER:-0}" == "1" ]]; then
+  # No Snowflake login here, so the run fails, but inside the worker's CLI, not on the way to it.
+  out=$(docker compose run --rm probe python -m mcp_server.probe --url http://mcp-server:8000/mcp \
+    --tool coco_task --args '{"prompt": "hi", "max_turns": 1}' 2>&1 || true)
+  if grep -q "Could not reach COCO_WORKER" <<<"$out"; then fail "mcp-server cannot reach coco-worker: $out"; fi
+  grep -q "Cortex Code run failed" <<<"$out" && pass "mcp-server reaches coco-worker (CLI needs Snowflake to run)" \
+    || fail "unexpected coco_task result: $out"
+fi
+
 echo "== image sizes"
-docker image ls --format '{{.Repository}}:{{.Tag}}  {{.Size}}' | grep -E '^mcp-(server|client):local'
+docker image ls --format '{{.Repository}}:{{.Tag}}  {{.Size}}' | grep -E '^(mcp-server|mcp-client|coco-worker):local'
 
 echo "SMOKE PASSED"

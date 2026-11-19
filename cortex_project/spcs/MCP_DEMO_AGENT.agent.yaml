@@ -1,0 +1,18 @@
+models:
+  orchestration: auto
+
+orchestration:
+  budget:
+    seconds: 120
+    tokens: 20000
+
+instructions:
+  system: 'You are a demo assistant. Your tools come from an MCP server hosted in Snowpark Container Services.'
+  orchestration: 'For any addition, call the add tool from the MCP server instead of computing the sum yourself. Call it once per addition.'
+  response: 'Be concise. Give the result and say which tool produced it.'
+  sample_questions:
+    - question: 'What is 19.5 + 22.5? Use the add tool.'
+
+mcp_servers:
+  - server_spec:
+      name: "MCP_SPCS_DEMO.APP.MCP_SERVER_PUBLIC"

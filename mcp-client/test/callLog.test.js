@@ -53,7 +53,7 @@ test('totals keep counting after old entries are evicted', () => {
 });
 
 test('stats on an empty log', () => {
-  assert.deepEqual(new CallLog().stats(), { total: 0, errors: 0, avgMs: null, p95Ms: null, lastId: 0 });
+  assert.deepEqual(new CallLog().stats(), { total: 0, errors: 0, running: 0, avgMs: null, p95Ms: null, lastId: 0, lastRev: 0 });
 });
 
 test('onAppend hook receives each stored entry', () => {
@@ -62,4 +62,37 @@ test('onAppend hook receives each stored entry', () => {
   log.append(entry());
   log.append(entry());
   assert.deepEqual(seen, [1, 2]);
+});
+
+test('update changes an entry in place and bumps its revision', () => {
+  const log = new CallLog();
+  const running = log.append({ source: 'manual', tool: 'slow', args: {}, status: 'running' });
+  log.append(entry());
+  const revBefore = log.stats().lastRev;
+  const done = log.update(running.id, { status: 'done', ok: true, result: 'x', latencyMs: 5 });
+  assert.equal(done.id, running.id);
+  assert.equal(done.ok, true);
+  assert.ok(done.rev > revBefore);
+  assert.deepEqual(log.sinceRev(revBefore).map((e) => e.id), [running.id]);
+  assert.equal(log.since(0).length, 2);
+});
+
+test('running entries count separately and stay out of latency and error stats', () => {
+  const log = new CallLog();
+  const running = log.append({ source: 'manual', tool: 'slow', args: {}, status: 'running' });
+  log.append(entry({ latencyMs: 10 }));
+  assert.equal(log.stats().running, 1);
+  assert.equal(log.stats().avgMs, 10);
+  log.update(running.id, { status: 'done', ok: false, error: 'boom', latencyMs: 30 });
+  const stats = log.stats();
+  assert.equal(stats.running, 0);
+  assert.equal(stats.errors, 1);
+  assert.equal(stats.avgMs, 20);
+});
+
+test('update of an evicted entry is a no-op', () => {
+  const log = new CallLog({ capacity: 1 });
+  const first = log.append(entry());
+  log.append(entry());
+  assert.equal(log.update(first.id, { ok: false }), null);
 });
